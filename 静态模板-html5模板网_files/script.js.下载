@@ -1,0 +1,381 @@
+//窗口水平居中
+$(window).resize(function(){
+    tc_center();
+});
+
+function tc_center(){
+    var _top=($(window).height()-$(".layerbox").height())/2;
+    var _left=($(window).width()-$(".layerbox").width())/2;
+
+    $(".layerbox").css({top:_top,left:_left});
+}
+
+
+
+$(document).ready(function(){
+
+	//checkSubmit
+	$('#regUser').submit(function ()
+	{
+		if($('#txtUsername').val()==""){
+			$('#txtUsername').focus();
+			alert("用户名不能为空！");
+			return false;
+		}
+		var phone = $('#mobile').val();
+		if (!(/^1[3456789]\d{9}$/.test(phone))) {
+				$('#mobile').focus();
+				alert("请输入正确手机号码！");
+				return false;
+		}
+		if($('#rsafeanswer').val()=="")
+		{
+			$('#rsafeanswer').focus();
+			alert("验证答案不能为空！");
+			return false;
+		}
+		if($('#phonecode').val()=="")
+		{
+			$('#phonecode').focus();
+			alert("手机验证码不能为空！");
+			return false;
+		}
+		if($('#txtpassword').val()=="")
+		{
+			$('#txtpassword').focus();
+			alert("登陆密码不能为空！");
+			return false;
+		}
+		if($('#userpwdok').val()!=$('#txtpassword').val())
+		{
+			$('#userpwdok').focus();
+			alert("两次密码不一致！");
+			return false;
+		}
+	})
+	var waittime = 180;
+	function checktime() {
+		if (waittime == 0) {
+			document.getElementById('sendphonecode').innerHTML = "发送验证码";
+			document.getElementById('sendphonecode').style.background="#FE9F20";
+			waittime = 180;
+			return
+		} else {
+			document.getElementById('sendphonecode').innerHTML = "请等待 " + waittime + "s";
+			waittime--;
+		}
+		setTimeout(function() {
+			checktime()
+		}, 1000)
+	}
+
+	$("#sendphonecode").click(function() {
+		if ( waittime == 180 ){
+			var phone = $('#mobile').val();
+			if (!(/^1[23456789]\d{9}$/.test(phone))) {
+				$('#mobile').focus();
+				alert("请输入正确手机号码！");
+				return false;
+			}
+	   //验证码校验，是否填写
+	   var rsafeanswer=$("#rsafeanswer").val();
+	   var faqkey=$("#faqkey").val();
+		if(rsafeanswer==""){
+			alert("请先输入您的注册问题答案！");
+			return false;
+		}  
+			var gourl = "/member/index_do.php?fmdo=sendPhoneCode&phone="+ phone+"&rsafeanswer="+rsafeanswer+"&faqkey="+faqkey;
+			$.get("/member/index_do.php?fmdo=sendPhoneCode&phone="+ phone+"&rsafeanswer="+rsafeanswer+"&faqkey="+faqkey,{},function(data){
+				if(data==1){			    
+				$("#mchkMsg").html("短信验证码发送成功");
+				waittime--;
+				checktime();
+                 }else{
+			    var obj=$.ajax({url:gourl,async:false}).responseText;;
+			    $("#mchkMsg").html(obj);
+                  }	
+	             })   
+		}
+	});
+	
+	var reMethod = "POST";
+	pwdmin =6;
+	//AJAX changChickValue
+	$("#txtUsername").change( function() {
+		$.ajax({type: reMethod,url: "/member/index_do.php",
+		data: "dopost=checkuser&fmdo=user&cktype=1&uid="+$("#txtUsername").val(),
+		dataType: 'html',
+		success: function(result){$("#_userid").html(result);}}); 
+	});	$("#txtUsername").change( function() {
+		$.ajax({type: reMethod,url: "/member/index_do.php",
+		data: "dopost=checkuser&fmdo=user&cktype=1&uid="+$("#txtUsername").val(),
+		dataType: 'html',
+		success: function(result){$("#_userid").html(result);}}); 
+	});
+	$("#mobile").change( function() {
+		var phone = $('#mobile').val();
+			if (!(/^1[23456789]\d{9}$/.test(phone))) {
+				$('#_mobile').html("<font color='red'>×手机号格式不正确</font>");
+			$('#mobile').focus();
+			}
+		else{
+			$.ajax({type: reMethod,url: "/member/index_do.php",
+			data: "dopost=checkmobile&fmdo=user&mobile="+$("#mobile").val(),
+			dataType: 'html',
+			success: function(result){$("#_mobile").html(result);}}); 
+		}
+	});	
+	$("#vdcode").change( function() {
+			$.ajax({type: reMethod,url: "/member/index_do.php",
+			data: "dopost=checkcode&fmdo=user&vdcode="+$("#vdcode").val(),
+			dataType: 'html',
+			success: function(result){$("#_vdcode").html(result);}}); 
+	});	
+	$("#phonecode").change( function() {	
+			$.ajax({type: reMethod,url: "/member/index_do.php",
+			data: "dopost=checkmb&fmdo=user&phone="+$("#mobile").val()+"&phonecode="+$("#phonecode").val(),
+			dataType: 'html',
+			success: function(result){$("#mchkMsg").html(result);}}); 
+	});	
+	$('#txtpassword').change( function(){
+		if($('#txtpassword').val().length < pwdmin)
+		{
+			$('#_userpwdok').html("<font color='red'>×密码不能小于"+pwdmin+"位</font>");
+		}
+		else if($('#userpwdok').val()!=$('txtPassword').val())
+		{
+			$('#_userpwdok').html("<font color='red'>×两次输入密码不一致</font>");
+		}
+		else if($('#userpwdok').val().length < pwdmin)
+		{
+			$('#_userpwdok').html("<font color='red'>×密码不能小于"+pwdmin+"位</font>");
+		}
+		else
+		{
+			$('#_userpwdok').html("<font color='#4E7504'>√填写正确</font>");
+		}
+	});
+	
+	$('#userpwdok').change( function(){
+		if($('#txtpassword').val().length < pwdmin)
+		{
+			$('#_userpwdok').html("<font color='red'>×密码不能小于"+pwdmin+"位</font>");
+		}
+		else if($('#userpwdok').val()=='')
+		{
+			$('#_userpwdok').html("<b>请填写确认密码</b>");
+		}
+		else if($('#userpwdok').val()!=$('#txtpassword').val())
+		{
+			$('#_userpwdok').html("<font color='red'>×两次输入密码不一致</font>");
+		}
+		else
+		{
+			$('#_userpwdok').html("<font color='#4E7504'>√填写正确</font>");
+		}
+	});
+	
+	$("a[href*='#vdcode'],#vdimgck").bind("click", function(){
+		$("#vdimgck").attr("src","../include/vdimgck.php?tag="+Math.random());
+		return false;
+	});
+		//顶部下拉
+	$(".head-nav").slide({type:"menu",titCell:".head-info",targetCell:".head-box",effect:"show",titOnClassName:"current",delayTime:100,triggerTime:100,returnDefault:true});
+
+	//导航菜单
+	$(".nav-bar ul").slide({type:"menu",titCell:".m",targetCell:".nav-menu",effect:"show",titOnClassName:"current",delayTime:100,triggerTime:100,returnDefault:true});
+
+	//焦点图
+	$(".fa-slide").slide({ mainCell:".pic",effect:"left", autoPlay:true, delayTime:300});
+
+	//友情链接
+	$(".fa-link").slide({ titCell:".hd a", mainCell:".bd",delayTime:0});
+
+	//瀑布流代码
+	var $container = $('.picbox');
+
+    $(".lazy").scrollLoading({
+     	callback: function() {
+			$container.imagesLoaded(function(){
+				$container.masonry('reload');
+			});
+		}
+	});
+
+	$container.imagesLoaded(function(){
+		$container.masonry({
+			itemSelector: '.item',
+			columnWidth: 0 //每两列之间的间隙为5像素
+		});
+	});
+
+	//浮动导航条和搜索框
+	$(".search-fixTop").fixedPointShow({
+		zIndex:100,
+		st:200
+	});
+
+	//搜索TAG切换功能
+    $(function(){
+        $('.search-tab ul li').on('click',function () {
+            $('.search-tab ul li').removeClass('selected');
+            $(this).addClass('selected');
+        });
+    });
+
+	//弹出框调用部分
+	$(function(){
+		//登录框
+		$('.lg-layer').click(function() {
+			$('.goodcover').show();
+			$('#loginbox').fadeIn();
+			tc_center();
+		});
+		$('.switch-close').click(function() {
+			$('#loginbox').hide();
+			$('.goodcover').hide();
+		});
+		$('.goodcover').click(function() {
+			$('#loginbox').hide();
+			$('.goodcover').hide();
+		});
+
+		//注册框
+		$('.reg-layer').click(function() {
+			$('.goodcover').show();
+			$('#registerbox').fadeIn();
+			tc_center();
+		});
+		$('.switch-close').click(function() {
+			$('#registerbox').hide();
+			$('.goodcover').hide();
+		});
+		$('.goodcover').click(function() {
+			$('#registerbox').hide();
+			$('.goodcover').hide();
+		});
+
+		//举报
+		$('.jb-layer').click(function() {
+			$('.overlay').show();
+			$('.dialog-box').fadeIn();
+			tc_center();
+			var commentId = $(this).attr('comment-id');
+			var report_user_id = $(this).attr('report-user-id');
+			var pins_id = $(this).attr('pins-id');
+			jbComment(commentId, report_user_id, pins_id);
+		});
+		
+		$('.dialog-close').click(function() {
+			$('.dialog-box').hide();
+			$('.overlay').hide();
+		});
+		$('.overlay').click(function() {
+			$('.dialog-box').hide();
+			$('.overlay').hide();
+		});
+
+
+		$("#threelogin").click(function() {
+			$("#otherway").show();
+			$("#zhannei").hide();
+		});
+		$("#znlogin").click(function() {
+			$("#otherway").hide();
+			$("#zhannei").show();
+		});
+
+	});
+
+
+
+	//返回顶部
+	$(function(){
+
+		var $bottomTools = $('.bottom_tools');
+		var $qrTools = $('.qr_tool');
+		var qrImg = $('.qr_img');
+
+		$(window).scroll(function () {
+			var scrollHeight = $(document).height();
+			var scrollTop = $(window).scrollTop();
+			var $windowHeight = $(window).innerHeight();
+			scrollTop > 50 ? $("#scrollUp").fadeIn(200).css("display","block") : $("#scrollUp").fadeOut(200);
+			$bottomTools.css("bottom", scrollHeight - scrollTop > $windowHeight ? 40 : $windowHeight + scrollTop + 40 - scrollHeight);
+		});
+
+		$('#scrollUp').click(function (e) {
+			e.preventDefault();
+			$('html,body').animate({ scrollTop:0});
+		});
+
+		$qrTools.hover(function () {
+			qrImg.fadeIn();
+		}, function(){
+			 qrImg.fadeOut();
+		});
+
+	});
+
+});
+
+$(function() {
+    $('#_fix_btn').on('click', function() {
+        var kw = $('#_fix_search').val()
+        if(kw) {
+            window.location.href="/plus/search.php?q="+kw;
+        }
+    });
+});
+
+
+
+
+$(function() {
+	
+	var keywords = $('#home-searchInput').val();
+	$('#search-form').attr('action', '/plus/search.php?q='+keywords);
+
+    $("#home-searchInput").on('click', function() {
+        $('#search-hot').show();
+    });
+    $('#home-searchInput').on('keyup', function(a) {
+
+        var keywords = $('#home-searchInput').val();
+
+        $('#search-form').attr('action', '/plus/search.php?q='+keywords);
+        $('#search-kw').hide();
+
+      /*  $.getJSON('keywords?kw='+keywords, function(data) {
+
+            $('#search-hot').hide();
+            var kwHtml = '' ;
+            $.each(data, function(key, v) {
+                kwHtml += '<ul class="sokeyup_1"><li class="sokeyup_2">'+v.title+'</li><li class="sokeyup_3">'+v.count+' 结果</li></ul>';
+            });
+
+            $('#search-kw').html(kwHtml).show();
+            $("#search-kw").on("click", ".sokeyup_1",
+                function() {
+                    var a = $("#search-kw .sokeyup_1").index(this),
+                        b = $("#search-kw .sokeyup_2").eq(a).html();
+
+                    $('#search-form').attr('action', '/plus/search.php'+b);
+                    $("#search-form").submit();
+                });
+        });*/
+    });
+
+    $("#search-hot").on("click", ".sokeyup_1",
+        function() {
+            var a = $("#search-hot .sokeyup_1").index(this),
+                b = $("#search-hot .sokeyup_2").eq(a).html();
+            $('#search-form').attr('action', '/plus/search.php'+b);
+            $("#search-form").submit();
+        });
+    $("#home-searchInput").on('blur', function() {
+
+        setTimeout('$("#search-kw").hide()', 500);
+        setTimeout('$("#search-hot").hide()', 500);
+    });
+})

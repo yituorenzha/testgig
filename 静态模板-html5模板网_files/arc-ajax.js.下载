@@ -1,0 +1,30 @@
+//收藏资源
+function stows($aid)
+{
+	$.ajax({
+			type:'post',
+			url:'/plus/stow.php?aid='+$aid,
+			data:{
+				myset:'ajax',
+				aid:$aid,
+			},
+			success:function(data,status){
+				if(data=='0'){
+					alert('收藏文档ID不能为空');
+				}else if(data=='1'){
+					alert("只有会员才允许收藏,请先注册会员");
+				}else if(data=='2'){
+					alert('无法收藏未知资源！');
+				}else if(data=='3'){
+					alert('您已经收藏过此文档，请勿重复收藏');
+				}else if(data=='4'){
+					alert('收藏成功，请到用户中心收藏夹查看');
+					location.reload();
+				}else{
+					alert('出现未知错误，请反馈给管理员');
+				}
+			}
+		});
+	return false;
+};
+
